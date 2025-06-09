@@ -18,16 +18,14 @@ const theme = createTheme({
 
 function App() {
   const [selectedTool, setSelectedTool] = useState<string | null>(null)
-  const [toolInstance, setToolInstance] = useState(0)
 
   const handleToolSelect = (toolId: string) => {
     if (toolId === selectedTool) {
-      // If the same tool is selected again, increment the instance
-      setToolInstance(prev => prev + 1)
+      // If the same tool is selected again, deselect it
+      setSelectedTool(null)
     } else {
-      // If a different tool is selected, update the tool and reset instance
+      // If a different tool is selected, update the tool
       setSelectedTool(toolId)
-      setToolInstance(0)
     }
   }
 
