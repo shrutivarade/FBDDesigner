@@ -135,11 +135,14 @@ const Canvas: React.FC = () => {
     e.preventDefault();
     const mousePos = getMousePos(e);
     
-    // Check if zoom modifier key is pressed
-    const shouldZoom = isMac ? e.metaKey : e.ctrlKey;
+    // Check if zoom should happen:
+    // 1. Cmd+scroll on Mac
+    // 2. Ctrl+scroll on Windows/Linux  
+    // 3. Pinch gesture on trackpad (ctrlKey is automatically set by browser)
+    const shouldZoom = (isMac && e.metaKey) || e.ctrlKey;
     
     if (shouldZoom) {
-      // Zoom behavior with Ctrl+scroll (Windows) or Cmd+scroll (Mac)
+      // Zoom behavior with modifier+scroll or pinch gesture
       const scaleFactor = e.deltaY > 0 ? 0.9 : 1.1;
       const newScale = Math.max(0.1, Math.min(5, scale * scaleFactor));
       
@@ -195,7 +198,7 @@ const Canvas: React.FC = () => {
         <span className="zoom-reset" onClick={resetZoom}>
           Zoom: {Math.round(scale * 100)}%
         </span>
-        {/* <span>• {isMac ? 'Cmd' : 'Ctrl'}+Drag: Pan • {isMac ? 'Cmd' : 'Ctrl'}+Scroll: Zoom • Scroll: Pan{isMac ? ' • 2-Finger: Pan' : ''}</span> */}
+        {/* <span>• {isMac ? 'Cmd' : 'Ctrl'}+Drag: Pan • {isMac ? 'Cmd' : 'Ctrl'}+Scroll: Zoom • Scroll: Pan • Pinch: Zoom{isMac ? ' • 2-Finger: Pan' : ''}</span> */}
       </div>
     </div>
   );
