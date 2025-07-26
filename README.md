@@ -1,56 +1,101 @@
-# React + TypeScript + Vite
+# FBD Designer
 
-https://onkarsalunkhe.github.io/FBDDesigner/
+A React application built with Vite, Material UI, and Rough.js for creating hand-drawn style diagrams and drawings.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Features
 
-Currently, two official plugins are available:
+- **React 19** with TypeScript for modern component development
+- **Vite** for fast development and building
+- **Material UI** for beautiful, responsive UI components
+- **Rough.js** for hand-drawn style graphics and sketching
+- Interactive drawing canvas with multiple tools
+- Customizable stroke width and roughness settings
+- Modern, clean interface with Material Design
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Getting Started
 
-## Expanding the ESLint configuration
+### Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js (version 18 or higher)
+- npm or yarn
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open your browser and navigate to the local development URL (usually `http://localhost:5173`)
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Auto-fix ESLint issues
+- `npm run type-check` - Run TypeScript type checking
+- `npm run preview` - Preview production build
+- `npm run commit` - Interactive commit with conventional format
+- `npm run commit:retry` - Retry commit if previous failed
+
+## Technologies Used
+
+- **React 19** - UI library
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **Material UI** - Component library
+- **Rough.js** - Hand-drawn style graphics
+- **Emotion** - CSS-in-JS styling
+
+## Drawing Tools
+
+The application includes:
+- **Rectangle Tool** - Draw rectangles by clicking and dragging
+- **Circle Tool** - Draw circles with radius based on drag distance
+- **Line Tool** - Draw straight lines
+- **Stroke Width Control** - Adjust line thickness (1-10px)
+- **Roughness Control** - Adjust the hand-drawn style (0-5)
+- **Clear Canvas** - Reset the drawing area
+
+## Usage
+
+1. Select a drawing tool (Rectangle, Circle, or Line)
+2. Adjust stroke width and roughness using the sliders
+3. Click and drag on the canvas to draw
+4. Use "Clear Canvas" to start over
+
+## Project Structure
+
+```
+src/
+├── App.tsx          # Main application component
+├── main.tsx         # Application entry point
+├── index.css        # Global styles
+└── assets/          # Static assets
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Commit Standards
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+This project follows [Conventional Commits](https://www.conventionalcommits.org/) specification. Please use the interactive commit tool for properly formatted commit messages:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npm run commit
 ```
+
+See [COMMIT_STANDARDS.md](./COMMIT_STANDARDS.md) for detailed guidelines.
+
+### Git Hooks
+
+- **Pre-commit**: Runs ESLint and TypeScript type checking
+- **Commit-msg**: Validates commit message format
+
+## License
+
+MIT License
