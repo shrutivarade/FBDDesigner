@@ -9,10 +9,13 @@ const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });
   const [lastPanPoint, setLastPanPoint] = useState<Point>({ x: 0, y: 0 });
+  const [selectionStart, setSelectionStart] = useState<Point>({ x: 0, y: 0 });
+  const [selectionEnd, setSelectionEnd] = useState<Point>({ x: 0, y: 0 });
   const [dimensions, setDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
   // Detect if we're on Mac
@@ -45,16 +48,10 @@ const Canvas: React.FC = () => {
     }
   }, [dimensions]);
 
-  // Redraw the entire canvas with grid
-  const redrawCanvas = useCallback(() => {
+  // Draw grid pattern on the canvas
+  const drawGrid = useCallback(() => {
     if (!context || !dimensions.width || !dimensions.height) return;
     
-    // Clear the canvas
-    context.setTransform(1, 0, 0, 1, 0, 0);
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, dimensions.width, dimensions.height);
-    
-    // Draw grid pattern
     context.strokeStyle = '#f0f0f0';
     context.lineWidth = 1;
     
@@ -78,6 +75,41 @@ const Canvas: React.FC = () => {
       context.stroke();
     }
   }, [context, dimensions, scale, offset]);
+
+  // Draw selection rectangle on the canvas
+  const drawSelection = useCallback(() => {
+    if (!context || !isSelecting) return;
+    
+    const rectX = Math.min(selectionStart.x, selectionEnd.x);
+    const rectY = Math.min(selectionStart.y, selectionEnd.y);
+    const rectWidth = Math.abs(selectionEnd.x - selectionStart.x);
+    const rectHeight = Math.abs(selectionEnd.y - selectionStart.y);
+
+    // Selection fill (light pistachio with transparency)
+    context.fillStyle = 'rgba(193, 247, 220, 0.3)'; // Light color with 20% opacity
+    context.fillRect(rectX, rectY, rectWidth, rectHeight);
+
+    // Selection border
+    context.strokeStyle = '#25e384'; 
+    context.lineWidth = 1;
+    // context.setLineDash([5, 5]); // Dashed line
+    context.strokeRect(rectX, rectY, rectWidth, rectHeight);
+    // context.setLineDash([]); // Reset line dash
+  }, [context, isSelecting, selectionStart, selectionEnd]);
+
+  // Redraw the entire canvas with grid and selection
+  const redrawCanvas = useCallback(() => {
+    if (!context || !dimensions.width || !dimensions.height) return;
+    
+    // Clear the canvas
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, dimensions.width, dimensions.height);
+    
+    // Draw components
+    drawGrid();
+    drawSelection();
+  }, [context, dimensions, drawGrid, drawSelection]);
 
   useEffect(() => {
     redrawCanvas();
@@ -107,9 +139,15 @@ const Canvas: React.FC = () => {
     const mousePos = getMousePos(e);
     
     if (shouldPan(e)) {
+      // Panning mode
       setIsPanning(true);
       setLastPanPoint(mousePos);
       e.preventDefault();
+    } else if (e.button === 0) {
+      // Selection mode (default left click)
+      setIsSelecting(true);
+      setSelectionStart(mousePos);
+      setSelectionEnd(mousePos);
     }
   };
 
@@ -124,11 +162,14 @@ const Canvas: React.FC = () => {
         y: prev.y + deltaY
       }));
       setLastPanPoint(mousePos);
+    } else if (isSelecting) {
+      setSelectionEnd(mousePos);
     }
   };
 
   const handleMouseUp = () => {
     setIsPanning(false);
+    setIsSelecting(false);
   };
 
   const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
@@ -171,6 +212,7 @@ const Canvas: React.FC = () => {
   // Dynamic cursor based on modifier keys
   const getCursorStyle = (): string => {
     if (isPanning) return 'grabbing';
+    if (isSelecting) return 'crosshair';
     return 'default';
   };
 

@@ -46,10 +46,11 @@
   position: absolute;
   bottom: 20px;
   left: 20px;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
+  background-color: rgba(224, 251, 238, 0.8);
+  color: #4e4e4e;
   padding: 8px 12px;
   border-radius: 6px;
+  /* border: 1px solid #4e4e4e; */
   font-size: 12px;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   pointer-events: none;
