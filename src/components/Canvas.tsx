@@ -16,10 +16,9 @@ type Shape = RectangleShape | CircleShape | LineShape | ArrowShape | PencilShape
 interface CanvasProps {
   selectedTool: string | null;
   onToolSelect: (tool: string) => void;
-  onClearSelections?: () => void;
 }
 
-const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSelections }) => {
+const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
@@ -41,7 +40,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
   const [textSelectionEnd, setTextSelectionEnd] = useState<number | null>(null);
   const [isResizingText, setIsResizingText] = useState(false);
   const [textResizeHandle, setTextResizeHandle] = useState<string | null>(null);
-  const [textResizeStartSize, setTextResizeStartSize] = useState<{width: number, height: number}>({width: 0, height: 0});
+  const [, setTextResizeStartSize] = useState<{width: number, height: number}>({width: 0, height: 0});
   const [textResizeStartMouse, setTextResizeStartMouse] = useState<Point>({x: 0, y: 0});
   const [originalFontSize, setOriginalFontSize] = useState<number>(16);
   const [lastClickTime, setLastClickTime] = useState<number>(0);
@@ -73,7 +72,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
   }, []);
 
   const hitTestLine = useCallback((shape: LineShape, point: Point): boolean => {
-    const threshold = 5; // pixels
+    const THRESHOLD = 5; // pixels
     const A = point.x - shape.x1;
     const B = point.y - shape.y1;
     const C = shape.x2 - shape.x1;
@@ -98,7 +97,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
 
     const dx = point.x - xx;
     const dy = point.y - yy;
-    return Math.sqrt(dx * dx + dy * dy) <= threshold;
+    return Math.sqrt(dx * dx + dy * dy) <= THRESHOLD;
   }, []);
 
   const hitTestArrow = useCallback((shape: ArrowShape, point: Point): boolean => {
@@ -116,7 +115,6 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
   }, [hitTestLine]);
 
   const hitTestPencil = useCallback((shape: PencilShape, point: Point): boolean => {
-    const threshold = 5; // pixels
     for (let i = 0; i < shape.points.length - 1; i++) {
       const lineShape: LineShape = {
         id: '',
@@ -183,11 +181,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
     }
   }, [history, historyIndex]);
 
-  // Update shapes and add to history
-  const updateShapes = useCallback((newShapes: Shape[]) => {
-    setShapes(newShapes);
-    addToHistory(newShapes);
-  }, [addToHistory]);
+  // Update shapes and add to history - removed unused function
 
   // Update canvas dimensions to match viewport
   const updateDimensions = useCallback(() => {
@@ -549,7 +543,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
         );
       
       case 'line':
-      case 'arrow':
+      case 'arrow': {
         const lineShape = shape as LineShape | ArrowShape;
         const minX = Math.min(lineShape.x1, lineShape.x2);
         const minY = Math.min(lineShape.y1, lineShape.y2);
@@ -561,8 +555,9 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
           maxX <= canvasSelectionRect.x + canvasSelectionRect.width &&
           maxY <= canvasSelectionRect.y + canvasSelectionRect.height
         );
+      }
       
-      case 'pencil':
+      case 'pencil': {
         const pencilShape = shape as PencilShape;
         if (pencilShape.points.length === 0) return false;
         const xs = pencilShape.points.map(p => p.x);
@@ -577,8 +572,9 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
           maxPencilX <= canvasSelectionRect.x + canvasSelectionRect.width &&
           maxPencilY <= canvasSelectionRect.y + canvasSelectionRect.height
         );
+      }
       
-      case 'text':
+      case 'text': {
         const textShape = shape as TextShape;
         if (!context) return false;
         context.font = `${textShape.fontSize}px ${textShape.fontFamily}`;
@@ -589,6 +585,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
           textShape.x + textWidth <= canvasSelectionRect.x + canvasSelectionRect.width &&
           textShape.y + textShape.fontSize <= canvasSelectionRect.y + canvasSelectionRect.height
         );
+      }
       
       default:
         return false;
@@ -656,7 +653,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
     });
     
     context.restore();
-  }, [context, shapes, scale, offset, editingText, showTextCursor, textCursorPosition]);
+  }, [context, shapes, scale, offset, editingText, showTextCursor, textCursorPosition, textSelectionStart, textSelectionEnd]);
 
   // Draw preview of shape being drawn
   const drawPreview = useCallback(() => {
@@ -738,7 +735,6 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
   // Helper function to check if mouse is over a resize handle
   const getResizeHandle = useCallback((mousePos: Point, boundingBox: {x: number, y: number, width: number, height: number}): string | null => {
     const handleSize = 10; // Handle size in screen coordinates
-    const canvasPoint = screenToCanvas(mousePos);
     
     // Convert bounding box to screen coordinates
     const screenBounds = {
@@ -764,7 +760,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
     }
     
     return null;
-  }, [scale, offset, screenToCanvas]);
+  }, [scale, offset]);
 
   // Draw selection indicators for selected shapes
   const drawSelectionIndicators = useCallback(() => {
@@ -803,7 +799,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
           break;
           
         case 'line':
-        case 'arrow':
+        case 'arrow': {
           const lineShape = shape as LineShape | ArrowShape;
           const minX = Math.min(lineShape.x1, lineShape.x2);
           const minY = Math.min(lineShape.y1, lineShape.y2);
@@ -816,8 +812,9 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
             height: (maxY - minY) + 10
           };
           break;
+        }
           
-        case 'pencil':
+        case 'pencil': {
           const pencilShape = shape as PencilShape;
           if (pencilShape.points.length > 0) {
             const xs = pencilShape.points.map(p => p.x);
@@ -834,8 +831,9 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
             };
           }
           break;
+        }
           
-        case 'text':
+        case 'text': {
           const textShape = shape as TextShape;
           context.font = `${textShape.fontSize}px ${textShape.fontFamily}`;
           const textWidth = TextDrawer.getTextWidth(context, textShape);
@@ -847,6 +845,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
             height: textHeight + 10
           };
           break;
+        }
       }
       
       // Draw the rectangular bounding box for all shapes
@@ -1135,26 +1134,30 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
          
          // Calculate scale factor based on handle being dragged
          switch (textResizeHandle) {
-           case 'se': // Southeast - most intuitive
+           case 'se': { // Southeast - most intuitive
              const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
              scaleFactor = 1 + distance / sensitivityFactor;
              if (deltaX < 0 || deltaY < 0) scaleFactor = 1 / scaleFactor;
              break;
-           case 'nw': // Northwest
+           }
+           case 'nw': { // Northwest
              const distanceNW = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
              scaleFactor = 1 + distanceNW / sensitivityFactor;
              if (deltaX > 0 || deltaY > 0) scaleFactor = 1 / scaleFactor;
              break;
-           case 'ne': // Northeast
+           }
+           case 'ne': { // Northeast
              const distanceNE = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
              scaleFactor = 1 + distanceNE / sensitivityFactor;
              if (deltaX < 0 || deltaY > 0) scaleFactor = 1 / scaleFactor;
              break;
-           case 'sw': // Southwest
+           }
+           case 'sw': { // Southwest
              const distanceSW = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
              scaleFactor = 1 + distanceSW / sensitivityFactor;
              if (deltaX > 0 || deltaY < 0) scaleFactor = 1 / scaleFactor;
              break;
+           }
          }
          
          scaleFactor = Math.max(0.2, Math.min(5, scaleFactor));
@@ -1366,17 +1369,7 @@ const Canvas: React.FC<CanvasProps> = ({ selectedTool, onToolSelect, onClearSele
       const selectedShape = shapes.find(s => s.id === selectedShapeId);
       
       if (selectedShape && selectedShape.type === 'text' && context) {
-        const textShape = selectedShape as TextShape;
-        context.font = `${textShape.fontSize}px ${textShape.fontFamily}`;
-        const textWidth = TextDrawer.getTextWidth(context, textShape);
-        const textHeight = TextDrawer.getTextHeight(textShape);
-        const boundingBox = {
-          x: textShape.x - 5,
-          y: textShape.y - 5,
-          width: textWidth + 10,
-          height: textHeight + 10
-        };
-        
+        // TODO: Could implement cursor change based on resize handle hover here
         // This would need mouse position, so we'll handle it in a useEffect or similar
         // For now, return default
       }
